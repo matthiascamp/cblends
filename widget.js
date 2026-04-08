@@ -331,11 +331,11 @@
     return new Date(year, month, 1).getDay();
   }
 
-  function isDateAvailable(date) {
+  function isDateAvailable(date, enabledWeekdays) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (date < today) return false;
-    if (BLOCKED_WEEKDAYS.includes(date.getDay())) return false;
+    if (enabledWeekdays && !enabledWeekdays.has(date.getDay())) return false;
     return true;
   }
 
@@ -877,14 +877,13 @@
               .eq('active', true)
               .order('created_at', { ascending: true }),
             sb.from('availability_rules')
-              .select('id')
+              .select('day_of_week')
               .eq('client_id', this.businessId)
-              .eq('enabled', true)
-              .limit(1)
-              .maybeSingle(),
+              .eq('enabled', true),
           ]);
           this._services = data || [];
-          this._hasAvailability = !!rules;
+          this._enabledWeekdays = new Set((rules || []).map(r => r.day_of_week));
+          this._hasAvailability = this._enabledWeekdays.size > 0;
           if (this.state.step === 1) this._render();
         })();
         return `
@@ -953,7 +952,7 @@
 
       for (let d = 1; d <= totalDays; d++) {
         const thisDate = new Date(calYear, calMonth, d);
-        const avail    = isDateAvailable(thisDate);
+        const avail    = isDateAvailable(thisDate, this._enabledWeekdays);
         const isToday  = thisDate.getTime() === today.getTime();
         const isSel    = selDate && selDate.getTime() === thisDate.getTime();
 
