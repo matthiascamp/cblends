@@ -6,8 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CBlends — By Caleb Lau</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -302,25 +300,46 @@
     }
 
     .location-map {
+      position: relative;
       border-radius: 8px;
       overflow: hidden;
       border: 1px solid var(--border);
       aspect-ratio: 4/3;
     }
 
-    #cblends-map {
+    .location-map iframe {
       width: 100%;
       height: 100%;
-      min-height: 320px;
+      border: none;
+      display: block;
     }
 
-    /* Leaflet attribution — keep it subtle */
-    .leaflet-control-attribution {
-      background: rgba(12,12,12,0.7) !important;
-      color: #666 !important;
-      font-size: 0.65rem !important;
+    .map-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 1.4rem;
     }
-    .leaflet-control-attribution a { color: #888 !important; }
+
+    .map-overlay span {
+      background: rgba(12,12,12,0.75);
+      backdrop-filter: blur(6px);
+      color: var(--gold);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      pointer-events: none;
+    }
+
+    .map-overlay.hidden { display: none; }
 
     @media (max-width: 700px) {
       .location-section {
@@ -488,7 +507,16 @@
       </div>
     </div>
     <div class="location-map reveal">
-      <div id="cblends-map"></div>
+      <div class="map-overlay" id="map-overlay">
+        <span>&#128205; Click to interact</span>
+      </div>
+      <iframe
+        src="https://maps.google.com/maps?q=-27.60227566158713,153.08391954490364&z=19&t=k&output=embed"
+        allowfullscreen
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        title="CBlends location">
+      </iframe>
     </div>
   </section>
 
@@ -529,47 +557,9 @@
   </script>
 
   <script>
-    // ── Location map (Leaflet + OpenStreetMap) ────────────────────────────────
-    (function () {
-      try {
-        const lat = -27.60227566158713;
-        const lon = 153.08391954490364;
-
-        const map = L.map('cblends-map', { scrollWheelZoom: true, zoomControl: true }).setView([lat, lon], 17);
-
-        // Esri satellite imagery — free, no API key required
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: 'Tiles &copy; Esri &mdash; Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-          maxZoom: 19,
-        }).addTo(map);
-
-        // Gold pin marker to match brand colour
-        const goldIcon = L.divIcon({
-          className: '',
-          html: `<div style="
-            width:28px; height:28px;
-            background: #C9A84C;
-            border: 3px solid #fff;
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-          "></div>`,
-          iconSize: [28, 28],
-          iconAnchor: [14, 28],
-          popupAnchor: [0, -30],
-        });
-
-        L.marker([lat, lon], { icon: goldIcon })
-          .addTo(map)
-          .bindPopup('<strong style="font-family:Inter,sans-serif;font-size:0.82rem;">CBlends</strong><br><span style="font-size:0.75rem;color:#555;">Unit 58/14 Cavill Place, Runcorn</span>')
-          .openPopup();
-
-      } catch (e) {
-        document.getElementById('cblends-map').innerHTML =
-          '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-size:0.85rem;">' +
-          '<a href="https://maps.google.com/?q=14+Cavill+Place+Runcorn+QLD" target="_blank" style="color:#C9A84C;">View on Google Maps ↗</a></div>';
-      }
-    })();
+    document.getElementById('map-overlay').addEventListener('click', function () {
+      this.classList.add('hidden');
+    });
   </script>
 
 </body>
