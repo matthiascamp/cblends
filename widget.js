@@ -150,32 +150,35 @@
     widget._host.appendChild(ccDiv);
 
     const stripe   = window.Stripe(STRIPE_PUBLISHABLE_KEY);
-    // theme:'none' gives full control — no Stripe defaults can conflict.
+    // appearance controls the iframe body background (fixes dark-mode bleed).
+    // style on each element controls the input text — the documented approach
+    // for individual card elements (cardNumber/cardExpiry/cardCvc).
     const elements = stripe.elements({
       appearance: {
-        theme: 'none',
+        theme: 'flat',
         variables: {
-          colorBackground:        '#ffffff',
-          colorText:              '#0a0a0f',
-          colorTextPlaceholder:   '#94a3b8',
-          fontFamily:             'Inter, system-ui, sans-serif',
-          fontSizeBase:           '14px',
-        },
-        rules: {
-          '.Input': {
-            color:           '#0a0a0f',
-            backgroundColor: '#ffffff',
-            fontSize:        '14px',
-            fontFamily:      'Inter, system-ui, sans-serif',
-          },
-          '.Input--invalid': { color: '#0a0a0f' },
-          '::placeholder':   { color: '#94a3b8' },
+          colorBackground:      '#ffffff',
+          colorText:            '#0a0a0f',
+          colorTextPlaceholder: '#94a3b8',
+          fontFamily:           'Inter, system-ui, sans-serif',
+          fontSizeBase:         '14px',
         },
       },
     });
-    const cardNumber = elements.create('cardNumber');
-    const cardExpiry = elements.create('cardExpiry');
-    const cardCvc    = elements.create('cardCvc');
+    const cardStyle = {
+      base: {
+        color:           '#0a0a0f',
+        backgroundColor: '#ffffff',
+        fontFamily:      'Inter, system-ui, sans-serif',
+        fontSize:        '14px',
+        '::placeholder': { color: '#94a3b8' },
+      },
+      // Keep text black even for invalid input — only show errors on submit
+      invalid: { color: '#0a0a0f' },
+    };
+    const cardNumber = elements.create('cardNumber', { style: cardStyle });
+    const cardExpiry = elements.create('cardExpiry', { style: cardStyle });
+    const cardCvc    = elements.create('cardCvc',    { style: cardStyle });
     cardNumber.mount(cnDiv);
     cardExpiry.mount(ceDiv);
     cardCvc.mount(ccDiv);
@@ -643,7 +646,7 @@
       }
       .bw-stripe-loading {
         font-size: 0.78rem;
-        color: ${t.sub};
+        color: #64748b;
         font-style: italic;
       }
       .bw-stripe-icon { font-size: 1rem; }
